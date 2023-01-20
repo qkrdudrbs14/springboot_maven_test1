@@ -73,32 +73,57 @@ public class AppTest {
 
         Matcher matcher = pattern.matcher(body);
 
+        String middleBody = "[";
         while(matcher.find()) {
-            System.out.println(matcher.group(1));
-
+            middleBody = middleBody + convert(matcher.group(1)) + ",";
             if(matcher.group(1) == null) break;
         }
 
+        middleBody = middleBody + "]";
+        String resultBody = middleBody.substring(0, middleBody.lastIndexOf(",")) 
+            + middleBody.substring(middleBody.lastIndexOf(",")+1, middleBody.length());
+
+        convertObject(resultBody);
     }
 
     String convert(String body) {
 
         String[] bodyImsi = body.split(",");
 
-        body = "[{";
+        body = "{";
   
         for(String t : bodyImsi) {
             String[] t1 = t.split("=");
-            t1[0] = "\"" + t1[0] + "\"";
-            t1[1] = "\"" + t1[1] + "\"";
             
-            System.out.println(t1[0] + ":" + t1[1]);
-            body = body + t1[0] + ":" + t1[1] + ",";
+            if(t1.length == 1) {
+                t1[0] = "\"" + t1[0] + "\"";
+                body = body + t1[0] + ":" + "\"\""+ ",";
+            } else {
+                t1[0] = "\"" + t1[0] + "\"";
+                t1[1] = "\"" + t1[1] + "\"";
+                body = body + t1[0] + ":" + t1[1] + ",";
+            }
         }
-        body = body  + "}]";
+        body = body  + "}";
 
-        return "";
+        String resultBody = body.substring(0, body.lastIndexOf(",")) + body.substring(body.lastIndexOf(",")+1, body.length());
+
+        // System.out.println(resultBody);    
+        return resultBody;
         
+    }
+
+    void convertObject(String json) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+           List<Object> list =  mapper.readValue(json, new TypeReference<List<Object>>(){});
+           System.out.println(list);
+           System.out.println(list.size());
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
 
 }
